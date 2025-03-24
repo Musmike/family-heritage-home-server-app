@@ -1,0 +1,49 @@
+# Android Studio
+.gradle/
+build/
+captures/
+.idea/
+local.properties
+*.iml
+
+# Gradle
+.gradle/
+build/
+!gradle-wrapper.jar
+
+# Android
+*.apk
+*.ap_ 
+*.aab
+*.dex
+*.class
+*.log
+
+# User-specific files
+.idea/.idea-*
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/.name
+
+# Keystore files
+*.jks
+*.keystore
+
+# Android Studio generated files
+out/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Linux
+*~
+
+# .env files or similar
+.env
