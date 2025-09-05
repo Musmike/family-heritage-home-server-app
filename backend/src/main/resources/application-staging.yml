@@ -1,0 +1,10 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+app:
+  cors:
+    allowed-origins:
+      - "http://${STAGING_SERVER_IP}:3001"
+      - "http://localhost:3001"
