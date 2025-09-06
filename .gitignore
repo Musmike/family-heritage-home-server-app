@@ -1,0 +1,15 @@
+.DS_Store
+Thumbs.db
+
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+.env
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

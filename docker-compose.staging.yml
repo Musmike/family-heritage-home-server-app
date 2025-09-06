@@ -1,0 +1,37 @@
+services:
+  db-staging:
+    image: postgres:15-alpine
+    container_name: family-heritage-db-staging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  backend:
+    container_name: family-heritage-backend-staging
+    image: ghcr.io/musmike/family-heritage-backend:${BACKEND_IMAGE_TAG}
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db-staging
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-staging:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: unless-stopped
+
+  frontend:
+    container_name: family-heritage-frontend-staging
+    image: ghcr.io/musmike/family-heritage-frontend:${FRONTEND_IMAGE_TAG}
+    ports:
+      - "3001:80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data_staging:

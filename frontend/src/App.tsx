@@ -6,7 +6,7 @@ function App() {
   const [message, setMessage] = useState<string>('Loading...');
 
  useEffect(() => {
-    const apiUrl = 'http://localhost:8080/api/v1/health';
+    const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/v1/health`;
 
     axios.get<{ message: string }>(apiUrl)
       .then(response => {
