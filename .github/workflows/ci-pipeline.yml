@@ -1,3 +1,5 @@
+# .github/workflows/ci-pipeline.yml
+
 name: CI Pipeline - Test and Validate PR
 
 on:
@@ -12,7 +14,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { java-version: '21', distribution: 'temurin' }
-      
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -23,9 +24,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
             
-      - run: chmod +x ./backend/gradlew
       - name: Run tests and build application
-        run: ./backend/gradlew build
+        working-directory: ./backend
+        run: ./gradlew build
 
       - name: Upload test reports
         if: always()
@@ -46,8 +47,8 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies, lint and build
+        working-directory: ./frontend
         run: |
-          cd frontend
           npm ci
           npm run lint
           npm run build
@@ -57,6 +58,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker-compose -f docker-compose.yml config
-      - run: docker-compose -f docker-compose.staging.yml config
-      - run: docker-compose -f docker-compose.prod.yml config
+      - name: Validate docker-compose.yml
+        run: docker compose -f docker-compose.yml config
+      - name: Validate docker-compose.staging.yml
+        run: docker compose -f docker-compose.staging.yml config
+      - name: Validate docker-compose.prod.yml
+        run: docker compose -f docker-compose.prod.yml config
