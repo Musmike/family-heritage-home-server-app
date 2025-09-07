@@ -1,43 +1,28 @@
-# .github/workflows/cd-pipeline-prod.yml
-
 name: CD Pipeline - Deploy to Production
-
 on:
   push:
-    tags:
-      - 'v*'
-
+    tags: [ 'v*' ]
 jobs:
   build-and-publish-prod:
     name: Build and Publish Production Images
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
+    permissions: { contents: read, packages: write }
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-
-      - name: Set Release Version
-        run: echo "RELEASE_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
-        
+      - run: echo "RELEASE_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
       - name: Build and push Backend image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           push: true
           tags: |
-            ghcr.io/${{ toLower(github.repository_owner) }}/family-heritage-backend:${{ env.RELEASE_VERSION }}
-            ghcr.io/${{ toLower(github.repository_owner) }}/family-heritage-backend:latest
-            
+            ghcr.io/${{ github.repository }}/family-heritage-backend:${{ env.RELEASE_VERSION }}
+            ghcr.io/${{ github.repository }}/family-heritage-backend:latest
       - name: Build and push Frontend image
         uses: docker/build-push-action@v5
         with:
@@ -45,25 +30,19 @@ jobs:
           dockerfile: ./frontend/Dockerfile.prod
           push: true
           tags: |
-            ghcr.io/${{ toLower(github.repository_owner) }}/family-heritage-frontend:${{ env.RELEASE_VERSION }}
-            ghcr.io/${{ toLower(github.repository_owner) }}/family-heritage-frontend:latest
-
+            ghcr.io/${{ github.repository }}/family-heritage-frontend:${{ env.RELEASE_VERSION }}
+            ghcr.io/${{ github.repository }}/family-heritage-frontend:latest
   deploy-to-production:
     name: Deploy to Production Server
     runs-on: self-hosted
     needs: build-and-publish-prod
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
+      - uses: actions/checkout@v4
       - name: Deploy to Production
         run: |
           DEPLOY_PATH=/mnt/onedrive-data/family_heritage_prod
           mkdir -p $DEPLOY_PATH
-          
           cp docker-compose.prod.yml $DEPLOY_PATH/docker-compose.prod.yml
-
           cd $DEPLOY_PATH
           
           echo "BACKEND_IMAGE_TAG=latest" > .env
@@ -71,6 +50,9 @@ jobs:
           echo "POSTGRES_USER=family_heritage_user_prod" >> .env
           echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD_PROD }}" >> .env
           echo "POSTGRES_DB=family_heritage_db_prod" >> .env
+          echo "VITE_API_BASE_URL=http://${{ secrets.PROD_SERVER_IP }}:8082" >> .env
+          echo "PROD_SERVER_IP=${{ secrets.PROD_SERVER_IP }}" >> .env
+          echo "GITHUB_REPOSITORY=${{ github.repository }}" >> .env
 
           docker compose -f docker-compose.prod.yml pull
           docker compose -f docker-compose.prod.yml up -d --remove-orphans

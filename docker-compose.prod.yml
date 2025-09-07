@@ -6,31 +6,34 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5434:5432"
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
     restart: unless-stopped
-
   backend:
     container_name: family-heritage-backend-prod
-    image: ghcr.io/musmike/family-heritage-backend:latest
+    image: ghcr.io/${GITHUB_REPOSITORY}/family-heritage-backend:latest
     ports:
-      - "8080:8080"
+      - "8082:8080"
     depends_on:
       - db-prod
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db-prod:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod
+      PROD_SERVER_IP: ${PROD_SERVER_IP}
     restart: unless-stopped
-
   frontend:
     container_name: family-heritage-frontend-prod
-    image: ghcr.io/musmike/family-heritage-frontend:latest
+    image: ghcr.io/${GITHUB_REPOSITORY}/family-heritage-frontend:latest
     ports:
       - "80:80"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     restart: unless-stopped
     depends_on:
       - backend
-
 volumes:
   postgres_data_prod:
