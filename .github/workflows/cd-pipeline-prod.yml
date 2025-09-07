@@ -35,8 +35,8 @@ jobs:
           context: ./backend
           push: true
           tags: |
-            ghcr.io/${{ tolower(github.repository_owner) }}/family-heritage-backend:${{ env.RELEASE_VERSION }}
-            ghcr.io/${{ tolower(github.repository_owner) }}/family-heritage-backend:latest
+            ghcr.io/${{ toLower(github.repository_owner) }}/family-heritage-backend:${{ env.RELEASE_VERSION }}
+            ghcr.io/${{ toLower(github.repository_owner) }}/family-heritage-backend:latest
             
       - name: Build and push Frontend image
         uses: docker/build-push-action@v5
@@ -45,8 +45,8 @@ jobs:
           dockerfile: ./frontend/Dockerfile.prod
           push: true
           tags: |
-            ghcr.io/${{ tolower(github.repository_owner) }}/family-heritage-frontend:${{ env.RELEASE_VERSION }}
-            ghcr.io/${{ tolower(github.repository_owner) }}/family-heritage-frontend:latest
+            ghcr.io/${{ toLower(github.repository_owner) }}/family-heritage-frontend:${{ env.RELEASE_VERSION }}
+            ghcr.io/${{ toLower(github.repository_owner) }}/family-heritage-frontend:latest
 
   deploy-to-production:
     name: Deploy to Production Server
