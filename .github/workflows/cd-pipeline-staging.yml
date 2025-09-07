@@ -25,7 +25,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
-          dockerfile: ./frontend/Dockerfile.prod
+          file: ./frontend/Dockerfile.prod
           push: true
           tags: ghcr.io/${{ env.REPO_LC }}/family-heritage-frontend:${{ github.sha }}
   deploy-to-staging:
