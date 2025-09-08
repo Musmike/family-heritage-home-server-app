@@ -53,8 +53,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Deploy to Production
         run: |
-          DEPLOY_PATH=/mnt/onedrive-data/family_heritage_prod
+          DEPLOY_PATH=${{ secrets.PROD_DEPLOY_PATH }}
           mkdir -p $DEPLOY_PATH
+          mkdir -p $DEPLOY_PATH/db_data
+          mkdir -p $DEPLOY_PATH/media
           cp docker-compose.prod.yml $DEPLOY_PATH/docker-compose.prod.yml
           cd $DEPLOY_PATH
           echo "BACKEND_IMAGE_TAG=latest" > .env

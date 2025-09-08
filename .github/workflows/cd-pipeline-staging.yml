@@ -49,8 +49,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Deploy to Staging
         run: |
-          DEPLOY_PATH=/mnt/onedrive-data/family_heritage_staging
+          DEPLOY_PATH=${{ secrets.STAGING_DEPLOY_PATH }}
           mkdir -p $DEPLOY_PATH
+          mkdir -p $DEPLOY_PATH/db_data
+          mkdir -p $DEPLOY_PATH/media
           cp docker-compose.staging.yml $DEPLOY_PATH/docker-compose.staging.yml
           cd $DEPLOY_PATH
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
