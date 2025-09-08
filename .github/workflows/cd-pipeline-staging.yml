@@ -53,8 +53,9 @@ jobs:
           mkdir -p $DEPLOY_PATH
           cp docker-compose.staging.yml $DEPLOY_PATH/docker-compose.staging.yml
           cd $DEPLOY_PATH
-          echo "BACKEND_IMAGE_TAG=${{ github.sha }}" > .env
-          echo "FRONTEND_IMAGE_TAG=${{ github.sha }}" >> .env
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "BACKEND_IMAGE_TAG=$SHORT_SHA" > .env
+          echo "FRONTEND_IMAGE_TAG=$SHORT_SHA" >> .env
           echo "GITHUB_REPOSITORY=${{ github.repository }}" >> .env
           echo "POSTGRES_USER=family_heritage_user_staging" >> .env
           echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD_STAGING }}" >> .env
