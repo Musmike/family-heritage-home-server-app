@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
   backend:
     container_name: family-heritage-backend-prod
-    image: ghcr.io/${GITHUB_REPOSITORY}/family-heritage-backend:${BACKEND_IMAGE_TAG}
+    image: ${BACKEND_IMAGE}
     ports:
       - "8082:8080"
     depends_on:
@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
   frontend:
     container_name: family-heritage-frontend-prod
-    image: ghcr.io/${GITHUB_REPOSITORY}/family-heritage-frontend:${FRONTEND_IMAGE_TAG}
+    image: ${FRONTEND_IMAGE}
     ports:
       - "80:80"
     environment:

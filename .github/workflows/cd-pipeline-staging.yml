@@ -7,6 +7,9 @@ jobs:
     name: Build and Publish Images
     runs-on: ubuntu-latest
     permissions: { contents: read, packages: write }
+    outputs:
+      backend_image: ${{ steps.prepare_tags.outputs.backend_image }}
+      frontend_image: ${{ steps.prepare_tags.outputs.frontend_image }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -14,33 +17,25 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-      - name: Generate Docker meta for Backend
-        id: meta_backend
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}/family-heritage-backend
-          tags: type=sha,prefix=
-      - name: Generate Docker meta for Frontend
-        id: meta_frontend
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}/family-heritage-frontend
-          tags: type=sha,prefix=
+      - name: Prepare image tags
+        id: prepare_tags
+        run: |
+          REPO_LC=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+          echo "backend_image=${{ format('ghcr.io/{0}/family-heritage-backend:{1}', REPO_LC, github.sha) }}" >> $GITHUB_OUTPUT
+          echo "frontend_image=${{ format('ghcr.io/{0}/family-heritage-frontend:{1}', REPO_LC, github.sha) }}" >> $GITHUB_OUTPUT
       - name: Build and push Backend image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           push: true
-          tags: ${{ steps.meta_backend.outputs.tags }}
-          labels: ${{ steps.meta_backend.outputs.labels }}
+          tags: ${{ steps.prepare_tags.outputs.backend_image }}
       - name: Build and push Frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           file: ./frontend/Dockerfile.prod
           push: true
-          tags: ${{ steps.meta_frontend.outputs.tags }}
-          labels: ${{ steps.meta_frontend.outputs.labels }}
+          tags: ${{ steps.prepare_tags.outputs.frontend_image }}
   deploy-to-staging:
     name: Deploy to Staging Server
     runs-on: self-hosted
@@ -53,14 +48,12 @@ jobs:
           mkdir -p $DEPLOY_PATH
           cp docker-compose.staging.yml $DEPLOY_PATH/docker-compose.staging.yml
           cd $DEPLOY_PATH
-          echo "BACKEND_IMAGE_TAG=${{ github.sha }}" > .env
-          echo "FRONTEND_IMAGE_TAG=${{ github.sha }}" >> .env
-          echo "GITHUB_REPOSITORY=${{ github.repository }}" >> .env
+          echo "BACKEND_IMAGE=${{ needs.build-and-publish.outputs.backend_image }}" > .env
+          echo "FRONTEND_IMAGE=${{ needs.build-and-publish.outputs.frontend_image }}" >> .env
           echo "POSTGRES_USER=family_heritage_user_staging" >> .env
           echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD_STAGING }}" >> .env
           echo "POSTGRES_DB=family_heritage_db_staging" >> .env
           echo "VITE_API_BASE_URL=http://${{ secrets.STAGING_SERVER_IP }}:8081" >> .env
           echo "STAGING_SERVER_IP=${{ secrets.STAGING_SERVER_IP }}" >> .env
-          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
           docker compose -f docker-compose.staging.yml pull
           docker compose -f docker-compose.staging.yml up -d --remove-orphans
