@@ -26,6 +26,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_PROFILES_ACTIVE: prod
       PROD_SERVER_IP: ${PROD_SERVER_IP}
+      APP_JWT_SECRET: ${APP_JWT_SECRET}
     restart: unless-stopped
   frontend:
     container_name: family-heritage-frontend-prod
