@@ -7,10 +7,5 @@ app:
     allowed-origins:
       - "http://${STAGING_SERVER_IP}:3001"
       - "http://localhost:3001"
-    allowed-methods:
-      - "GET"
-      - "POST"
-      - "PUT"
-      - "DELETE"
-      - "OPTIONS"
-    allow-credentials: true
+  jwt:
+    secret: ${APP_JWT_SECRET}
