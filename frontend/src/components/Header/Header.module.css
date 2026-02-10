@@ -1,0 +1,64 @@
+.appHeader { grid-area: header; }
+
+.appHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0 1.5rem;
+}
+
+.headerLeft, .headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.headerLogo {
+  height: 40px;
+  width: auto;
+}
+
+.hamburgerBtn, .logoutBtn, .accessibilityBtn {
+  background: none;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.hamburgerBtn:hover, .logoutBtn:hover, .accessibilityBtn:hover {
+  background-color: #f1f3f5;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logoutBtnIcon {
+  flex-shrink: 0;
+}
+
+.logoutBtnText {
+  white-space: nowrap;
+  font-size: 1rem; 
+}
+
+@media (max-width: 767px) {
+  .logoutBtnText {
+    display: none;
+  }
+  
+  .logoutBtn {
+    padding: 0.5rem;
+    gap: 0;
+  }
+
+  .headerLogo {
+    display: none;
+  }
+}

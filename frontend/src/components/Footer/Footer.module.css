@@ -1,0 +1,15 @@
+.appFooter {
+    grid-area: footer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.875rem;
+    color: #4e555a;
+    height: 50px;
+    width: 100%;
+    padding: 1rem;
+}
