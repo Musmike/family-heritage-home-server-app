@@ -1,11 +1,10 @@
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: validate
+  config:
+    activate:
+      on-profile: prod
 app:
-  cors:
-    allowed-origins:
-      - "http://${STAGING_SERVER_IP}:3001"
-      - "http://localhost:3001"
   jwt:
     secret: ${APP_JWT_SECRET}
+  cors:
+    allowed-origins:
+      - "http://familyheritage.192.168.100.144.nip.io"

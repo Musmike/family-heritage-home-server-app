@@ -21,24 +21,23 @@ class JwtServiceTest {
     private JwtService jwtService;
 
     private final String testSecret = "VGhpcyBpcyBhIHNlY3VyZSB0ZXN0IGtleSBmb3IgSldUIGVuY29kaW5nIGFuZCBtdXN0IGJlIGxvbmc=";
-    private final long testExpiration = 3600000; // 1 hour
+    private final long testAccessExpiration = 3600000; // 1 hour
 
     @BeforeEach
     void setUp() {
         jwtService = new JwtService();
         ReflectionTestUtils.setField(jwtService, "jwtSecret", testSecret);
-        ReflectionTestUtils.setField(jwtService, "jwtExpirationMs", testExpiration);
-
+        ReflectionTestUtils.setField(jwtService, "accessExpirationMs", testAccessExpiration);
         jwtService.init();
     }
 
     @Test
-    void shouldGenerateTokenWithCorrectUsernameAndExpiration() {
+    void shouldGenerateAccessTokenWithCorrectUsernameAndExpiration() {
         // GIVEN
         UserDetails userDetails = new User("testuser", "password", Collections.emptyList());
 
         // WHEN
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateAccessToken(userDetails);
 
         // THEN
         assertNotNull(token);
@@ -51,7 +50,7 @@ class JwtServiceTest {
 
         assertEquals("testuser", claims.getSubject());
         assertTrue(claims.getExpiration().after(new Date()));
-        assertTrue(claims.getExpiration().getTime() - claims.getIssuedAt().getTime() <= testExpiration);
+        assertTrue(claims.getExpiration().getTime() - claims.getIssuedAt().getTime() <= testAccessExpiration);
     }
 
     private SecretKey getSigningKey() {

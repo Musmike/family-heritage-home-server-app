@@ -1,10 +1,10 @@
 spring:
   config:
     activate:
-      on-profile: staging
+      on-profile: dev
 app:
   jwt:
     secret: ${APP_JWT_SECRET}
   cors:
     allowed-origins:
-      - "http://staging.192.168.100.144.nip.io"
+      - "http://dev.192.168.100.144.nip.io"
