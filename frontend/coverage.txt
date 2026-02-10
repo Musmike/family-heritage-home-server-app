@@ -1,0 +1,644 @@
+
+> frontend@0.0.0 test:coverage
+> vitest run --coverage
+
+
+ RUN  v3.2.4 /mnt/onedrive-data/kubuntu_pc_files/Documents/projects/github_projects/family-heritage-home-server-app/frontend
+      Coverage enabled with v8
+
+ ✓ src/components/Header/Header.test.tsx (2 tests) 34ms
+ ✓ src/App.test.tsx (2 tests) 60ms
+ ❯ src/components/Sidebar/Sidebar.test.tsx (2 tests | 1 failed) 263ms
+   × Sidebar Component > should render all main navigation links 241ms
+     → Unable to find an accessible element with the role "link" and name `/Dashboard/i`
+
+Here are the accessible roles:
+
+  complementary:
+
+  Name "":
+  [36m<aside[39m
+    [33mclass[39m=[32m"_sidebar_db19ec _sidebarOpen_db19ec"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Toggle sidebar":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Toggle sidebar"[39m
+    [33mclass[39m=[32m"_sidebarHeaderHamburger_db19ec"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  img:
+
+  Name "Family Heritage Logo":
+  [36m<img[39m
+    [33malt[39m=[32m"Family Heritage Logo"[39m
+    [33mclass[39m=[32m"_sidebarHeaderLogo_db19ec"[39m
+    [33msrc[39m=[32m"/src/assets/logo-light-mode.png"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  navigation:
+
+  Name "":
+  [36m<nav[39m
+    [33mclass[39m=[32m"_sidebarNav_db19ec"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul />[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "🏠 Panel główny":
+  [36m<a[39m
+    [33maria-current[39m=[32m"page"[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec _sidebarNavLinkActive_db19ec"[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/"[39m
+  [36m/>[39m
+
+  Name "👤 Biografie":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/biographies"[39m
+  [36m/>[39m
+
+  Name "📅 Wydarzenia":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/events"[39m
+  [36m/>[39m
+
+  Name "💬 Wspomnienia i powiedzenia":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/memories"[39m
+  [36m/>[39m
+
+  Name "📔 Dziennik":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/journal"[39m
+  [36m/>[39m
+
+  Name "🌳 Drzewo genealogiczne":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/tree"[39m
+  [36m/>[39m
+
+  Name "📊 Statystyki":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/statistics"[39m
+  [36m/>[39m
+
+  Name "🖼️ Galeria":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/gallery"[39m
+  [36m/>[39m
+
+  Name "📄 Dokumenty":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/documents"[39m
+  [36m/>[39m
+
+  Name "🪦 Nagrobki":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/gravestones"[39m
+  [36m/>[39m
+
+  Name "📍 Miejsca":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/places"[39m
+  [36m/>[39m
+
+  Name "🎁 Pamiątki":
+  [36m<a[39m
+    [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+    [33mdata-discover[39m=[32m"true"[39m
+    [33mhref[39m=[32m"/heirlooms"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  separator:
+
+  Name "":
+  [36m<hr[39m
+    [33mclass[39m=[32m"_sidebarDivider_db19ec"[39m
+    [33mrole[39m=[32m"separator"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<hr[39m
+    [33mclass[39m=[32m"_sidebarDivider_db19ec"[39m
+    [33mrole[39m=[32m"separator"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<hr[39m
+    [33mclass[39m=[32m"_sidebarDivider_db19ec"[39m
+    [33mrole[39m=[32m"separator"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [0m [0m
+    [36m<div[39m
+      [33mclass[39m=[32m"_sidebarOverlay_db19ec _sidebarOverlayVisible_db19ec"[39m
+    [36m/>[39m
+    [36m<aside[39m
+      [33mclass[39m=[32m"_sidebar_db19ec _sidebarOpen_db19ec"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"_sidebarHeader_db19ec"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_sidebarHeaderLeft_db19ec"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Toggle sidebar"[39m
+            [33mclass[39m=[32m"_sidebarHeaderHamburger_db19ec"[39m
+          [36m>[39m
+            [0m☰[0m
+          [36m</button>[39m
+          [36m<img[39m
+            [33malt[39m=[32m"Family Heritage Logo"[39m
+            [33mclass[39m=[32m"_sidebarHeaderLogo_db19ec"[39m
+            [33msrc[39m=[32m"/src/assets/logo-light-mode.png"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<nav[39m
+        [33mclass[39m=[32m"_sidebarNav_db19ec"[39m
+      [36m>[39m
+        [36m<ul>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec _sidebarNavLinkActive_db19ec"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m🏠[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mPanel główny[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<hr[39m
+            [33mclass[39m=[32m"_sidebarDivider_db19ec"[39m
+            [33mrole[39m=[32m"separator"[39m
+          [36m/>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/biographies"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m👤[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mBiografie[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/events"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m📅[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mWydarzenia[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/memories"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m💬[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mWspomnienia i powiedzenia[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/journal"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m📔[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mDziennik[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<hr[39m
+            [33mclass[39m=[32m"_sidebarDivider_db19ec"[39m
+            [33mrole[39m=[32m"separator"[39m
+          [36m/>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/tree"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m🌳[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mDrzewo genealogiczne[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/statistics"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m📊[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mStatystyki[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<hr[39m
+            [33mclass[39m=[32m"_sidebarDivider_db19ec"[39m
+            [33mrole[39m=[32m"separator"[39m
+          [36m/>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/gallery"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m🖼️[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mGaleria[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/documents"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m📄[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mDokumenty[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/gravestones"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m🪦[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mNagrobki[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/places"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m📍[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mMiejsca[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+          [36m<li>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"_sidebarNavLink_db19ec "[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/heirlooms"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navIcon_db19ec"[39m
+              [36m>[39m
+                [0m🎁[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"_navText_db19ec"[39m
+                [33mstyle[39m=[32m"white-space: normal;"[39m
+              [36m>[39m
+                [0mPamiątki[0m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</li>[39m
+        [36m</ul>[39m
+      [36m</nav>[39m
+    [36m</aside>[39m
+  [36m</div>[39m
+[36m</body>[39m
+   ✓ Sidebar Component > should render the dividers between sections 20ms
+ ❯ src/pages/LoginPage/LoginPage.test.tsx (3 tests | 1 failed) 1086ms
+   ✓ LoginPage Component > should render the core interactive elements of the login form 34ms
+   ✓ LoginPage Component > should call api and context login function on successful form submission 23ms
+   × LoginPage Component > should display an error message on failed login 1027ms
+     → Unable to find an element with the text: Nieprawidłowa nazwa użytkownika lub hasło.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_loginContainer_e14f65"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"_loginHeader_e14f65"[39m
+      [36m>[39m
+        [36m<img[39m
+          [33malt[39m=[32m"Family Heritage Logo"[39m
+          [33mclass[39m=[32m"_logo_e14f65"[39m
+          [33msrc[39m=[32m"mock-logo.png"[39m
+        [36m/>[39m
+      [36m</header>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"_loginMessage_e14f65"[39m
+      [36m>[39m
+        [0mWitaj! Zaloguj się, aby uzyskać dostęp do rodzinnego archiwum.[0m
+      [36m</p>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"_loginForm_e14f65"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_errorMessage_e14f65"[39m
+        [36m>[39m
+          [0mWystąpił nieoczekiwany błąd aplikacji.[0m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_formGroup_e14f65"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"username"[39m
+          [36m>[39m
+            [0mNazwa użytkownika[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mdata-testid[39m=[32m"login-username-input"[39m
+            [33mid[39m=[32m"username"[39m
+            [33mrequired[39m=[32m""[39m
+            [33mtype[39m=[32m"text"[39m
+            [33mvalue[39m=[32m"user"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"_formGroup_e14f65"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mfor[39m=[32m"password"[39m
+          [36m>[39m
+            [0mHasło[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mdata-testid[39m=[32m"login-password-input"[39m
+            [33mid[39m=[32m"password"[39m
+            [33mrequired[39m=[32m""[39m
+            [33mtype[39m=[32m"password"[39m
+            [33mvalue[39m=[32m"wrongpass"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"_loginButton_e14f65"[39m
+          [33mdata-testid[39m=[32m"login-submit-button"[39m
+          [33mtype[39m=[32m"submit"[39m
+        [36m>[39m
+          [0mZaloguj się[0m
+        [36m</button>[39m
+      [36m</form>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"_loginContainer_e14f65"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"_loginHeader_e14f65"[39m
+        [36m>[39m
+          [36m<img[39m
+            [33malt[39m=[32m"Family Heritage Logo"[39m
+            [33mclass[39m=[32m"_logo_e14f65"[39m
+            [33msrc[39m=[32m"mock-logo.png"[39m
+          [36m/>[39m
+        [36m</header>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"_loginMessage_e14f65"[39m
+        [36m>[39m
+          [0mWitaj! Zaloguj się, aby uzyskać dostęp do rodzinnego archiwum.[0m
+        [36m</p>[39m
+        [36m<form[39m
+          [33mclass[39m=[32m"_loginForm_e14f65"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"_errorMessage_e14f65"[39m
+          [36m>[39m
+            [0mWystąpił nieoczekiwany błąd aplikacji.[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"_formGroup_e14f65"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mfor[39m=[32m"username"[39m
+            [36m>[39m
+              [0mNazwa użytkownika[0m
+            [36m</label>[39m
+            [36m<input[39m
+              [33mdata-testid[39m=[32m"login-username-input"[39m
+              [33mid[39m=[32m"username"[39m
+              [33mrequired[39m=[32m""[39m
+              [33mtype[39m=[32m"text"[39m
+              [33mvalue[39m=[32m"user"[39m
+            [36m/>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"_formGroup_e14f65"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mfor[39m=[32m"password"[39m
+            [36m>[39m
+              [0mHasło[0m
+            [36m</label>[39m
+            [36m<input[39m
+              [33mdata-testid[39m=[32m"login-password-input"[39m
+              [33mid[39m=[32m"password"[39m
+              [33mrequired[39m=[32m""[39m
+              [33mtype[39m=[32m"password"[39m
+              [33mvalue[39m=[32m"wrongpass"[39m
+            [36m/>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"_loginButton_e14f65"[39m
+            [33mdata-testid[39m=[32m"login-submit-button"[39m
+            [33mtype[39m=[32m"submit"[39m
+          [36m>[39m
+            [0mZaloguj się[0m
+          [36m</button>[39m
+        [36m</form>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+
+ Test Files  3 failed | 2 passed (5)
+      Tests  2 failed | 7 passed (9)
+   Start at  21:49:19
+   Duration  2.12s (transform 246ms, setup 251ms, collect 804ms, tests 1.44s, environment 1.63s, prepare 488ms)
+

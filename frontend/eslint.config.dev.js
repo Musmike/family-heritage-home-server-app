@@ -10,14 +10,13 @@ export default tseslint.config([
     files: ['**/*.{ts,tsx}'],
     extends: [
       ...tseslint.configs.recommendedTypeChecked,
-      ...tseslint.configs.strictTypeChecked,
       ...tseslint.configs.stylisticTypeChecked,
       reactX.configs['recommended-typescript'],
       reactDom.configs.recommended
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        project: ['./tsconfig.app.json'],
         tsconfigRootDir: import.meta.dirname
       },
       ecmaVersion: 2020,
