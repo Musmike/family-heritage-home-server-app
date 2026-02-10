@@ -1,0 +1,85 @@
+name: CI - Pull Request Validation
+
+on:
+  pull_request:
+    branches: [ "develop", "main", "release/*" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-backend:
+    name: Backend Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            src:
+              - 'backend/**'
+
+      - name: Set up JDK 21
+        if: steps.changes.outputs.src == 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build & Test Backend
+        if: steps.changes.outputs.src == 'true'
+        working-directory: ./backend
+        run: |
+          chmod +x gradlew
+          ./gradlew build --info
+      
+      - name: Upload Test Report
+        if: always() && steps.changes.outputs.src == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/build/test-results/test
+
+  validate-frontend:
+    name: Frontend Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            src:
+              - 'frontend/**'
+      
+      - name: Set up Node.js 20
+        if: steps.changes.outputs.src == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        if: steps.changes.outputs.src == 'true'
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Lint
+        if: steps.changes.outputs.src == 'true'
+        working-directory: ./frontend
+        run: npm run lint:prod
+
+      - name: Unit Tests
+        if: steps.changes.outputs.src == 'true'
+        working-directory: ./frontend
+        run: npm run test -- --run
+
+      - name: Build Check
+        if: steps.changes.outputs.src == 'true'
+        working-directory: ./frontend
+        run: npm run build

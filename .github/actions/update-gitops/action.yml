@@ -1,0 +1,71 @@
+name: 'Update GitOps Repo'
+description: 'Updates image tag in GitOps repository using yq'
+inputs:
+  environment:
+    description: 'Target environment (dev, staging, prod)'
+    required: true
+  image_tag:
+    description: 'New Docker Image Tag'
+    required: true
+  gitops_repo:
+    description: 'GitOps Repository Name (user/repo)'
+    required: true
+  app_id:
+    description: 'GitHub App ID'
+    required: true
+  private_key:
+    description: 'GitHub App Private Key'
+    required: true
+  installation_id:
+    description: 'GitHub App Installation ID'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate Token
+      id: generate_token
+      uses: tibdex/github-app-token@v2
+      with:
+        app_id: ${{ inputs.app_id }}
+        private_key: ${{ inputs.private_key }}
+        installation_id: ${{ inputs.installation_id }}
+
+    - name: Checkout GitOps Repo
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.gitops_repo }}
+        token: ${{ steps.generate_token.outputs.token }}
+        ref: main
+        path: gitops-repo
+
+    - name: Install yq
+      shell: bash
+      run: |
+        sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+        sudo chmod +x /usr/bin/yq
+
+    - name: Update Values File
+      shell: bash
+      working-directory: gitops-repo
+      run: |
+        ENV_NAME=${{ inputs.environment }}
+        NEW_TAG="${{ inputs.image_tag }}"
+        FILE_PATH="envs/${ENV_NAME}/values.yaml"
+
+        echo "Updating $FILE_PATH with tag: $NEW_TAG"
+
+        yq -i ".backend.image.tag = \"$NEW_TAG\"" $FILE_PATH
+        yq -i ".frontend.image.tag = \"$NEW_TAG\"" $FILE_PATH
+        
+        if [[ -z $(git status -s) ]]; then
+          echo "No changes to commit."
+          exit 0
+        fi
+
+        git config user.name "GitOps Bot"
+        git config user.email "gitops-bot@family-heritage.local"
+        
+        git add $FILE_PATH
+        git commit -m "chore(deploy): update ${ENV_NAME} to version ${NEW_TAG}"
+        git push
