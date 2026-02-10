@@ -12,12 +12,12 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,24 +53,64 @@ class AuthenticationControllerTest {
     }
 
     @Test
-    void shouldReturnJwtTokenWhenLoginIsSuccessful() throws Exception {
+    void shouldSetCookiesOnSuccessfulLogin() throws Exception {
         // GIVEN
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setUsername("user");
         loginRequest.setPassword("password");
 
-        Authentication auth = new UsernamePasswordAuthenticationToken(
-                new User("user", "pass", Collections.emptyList()), null);
+        UserDetails userDetails = User
+                .withUsername("user")
+                .password("pass")
+                .authorities("ADMIN").build();
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails,
+                null, userDetails.getAuthorities());
 
         Mockito.when(authenticationManager.authenticate(any())).thenReturn(auth);
-        Mockito.when(jwtService.generateToken(any())).thenReturn("mocked.jwt.token");
+        Mockito.when(jwtService.generateAccessToken(any())).thenReturn("mocked.access.token");
+        Mockito.when(jwtService.generateRefreshToken(any())).thenReturn("mocked.refresh.token");
 
         // WHEN & THEN
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.token").value("mocked.jwt.token"));
+                .andExpect(cookie().exists("access_token"))
+                .andExpect(cookie().httpOnly("access_token", true))
+                .andExpect(cookie().exists("refresh_token"))
+                .andExpect(cookie().httpOnly("refresh_token", true))
+                .andExpect(cookie().exists("XSRF-TOKEN"))
+                .andExpect(cookie().httpOnly("XSRF-TOKEN", false));
     }
+
+    @Test
+    void shouldReturnUnauthorizedWhenLoginFailsWithBadCredentials() throws Exception {
+        // GIVEN
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setUsername("user");
+        loginRequest.setPassword("wrongpassword");
+
+        Mockito.when(authenticationManager.authenticate(any()))
+                .thenThrow(new BadCredentialsException("Bad credentials"));
+
+        // WHEN & THEN
+        mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.errorCode").value("BAD_CREDENTIALS"))
+            .andExpect(jsonPath("$.message").value("Invalid username or password."));
+    }
+
+    @Test
+    void shouldLogoutAndClearCookies() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(post("/auth/logout"))
+                .andExpect(status().isOk())
+                .andExpect(cookie().maxAge("access_token", 0))
+                .andExpect(cookie().maxAge("refresh_token", 0))
+                .andExpect(cookie().maxAge("XSRF-TOKEN", 0));
+    }
+
+
 }
