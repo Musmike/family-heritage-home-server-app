@@ -93,7 +93,6 @@ jobs:
           gitops_repo: ${{ env.GITOPS_REPO }}
           app_id: ${{ secrets.GITOPS_APP_ID }}
           private_key: ${{ secrets.GITOPS_PRIVATE_KEY }}
-          installation_id: ${{ secrets.GITOPS_INSTALLATION_ID }}
           
   deploy-staging:
     name: Update Gitops (Staging)
@@ -110,7 +109,6 @@ jobs:
           gitops_repo: ${{ env.GITOPS_REPO }}
           app_id: ${{ secrets.GITOPS_APP_ID }}
           private_key: ${{ secrets.GITOPS_PRIVATE_KEY }}
-          installation_id: ${{ secrets.GITOPS_INSTALLATION_ID }}
 
   deploy-prod:
     name: Update Gitops (Production)
@@ -129,4 +127,3 @@ jobs:
           gitops_repo: ${{ env.GITOPS_REPO }}
           app_id: ${{ secrets.GITOPS_APP_ID }}
           private_key: ${{ secrets.GITOPS_PRIVATE_KEY }}
-          installation_id: ${{ secrets.GITOPS_INSTALLATION_ID }}

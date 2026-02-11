@@ -16,9 +16,6 @@ inputs:
   private_key:
     description: 'GitHub App Private Key'
     required: true
-  installation_id:
-    description: 'GitHub App Installation ID'
-    required: true
 
 runs:
   using: 'composite'
@@ -29,7 +26,7 @@ runs:
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.private_key }}
-        installation_id: ${{ inputs.installation_id }}
+        
 
     - name: Checkout GitOps Repo
       uses: actions/checkout@v4
