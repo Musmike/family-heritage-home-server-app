@@ -15,7 +15,8 @@ export default function Header() {
         <header className={styles.appHeader}>
             <div className={styles.headerLeft}>
                     <button 
-                        onClick={sidebar?.toggleSidebar} 
+                        type="button"
+                        onClick={sidebar.toggleSidebar} 
                         aria-label="Toggle sidebar" 
                         className={styles.hamburgerBtn}
                     >
@@ -25,10 +26,11 @@ export default function Header() {
             </div>
 
             <div className={styles.headerRight}>
-                <button aria-label="Accessibility settings" className={styles.accessibilityBtn}>♿</button>
+                <button type="button" aria-label="Accessibility settings" className={styles.accessibilityBtn}>♿</button>
 
                 {user && (
                     <button 
+                        type="button"
                         onClick={handleLogout} 
                         className={styles.logoutBtn}
                         data-testid="logout-button"

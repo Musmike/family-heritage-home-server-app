@@ -1,21 +1,18 @@
-// /mnt/onedrive-data/kubuntu_pc_files/Documents/projects/github_projects/family-heritage-home-server-app/frontend/src/pages/LoginPage/LoginPage.tsx
-import { useState, useContext } from 'react';
+import { useState, use } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
-import api from '../../api/axiosInstance'; // Use configured instance
+import api from '../../api/axiosInstance';
 import { AuthContext } from '../../context/AuthContext';
 import logo from '../../assets/logo-light-mode.png';
 import styles from './LoginPage.module.css';
 import Loader from '../../components/Loader/Loader';
 
-// Definicja typu dla odpowiedzi o błędzie z backendu
 interface ApiErrorResponse {
   errorCode: string;
   message: string;
 }
 
-// Funkcja pomocnicza do mapowania kodów błędów na wiadomości dla użytkownika
-const getLoginErrorMessage = (errorData: ApiErrorResponse | unknown): string => {
+const getLoginErrorMessage = (errorData: unknown): string => {
   if (typeof errorData === 'object' && errorData !== null && 'errorCode' in errorData) {
     const code = (errorData as ApiErrorResponse).errorCode;
     switch (code) {
@@ -41,19 +38,19 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const auth = useContext(AuthContext);
+  const auth = use(AuthContext);
   const navigate = useNavigate();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     try {
-      await api.post(
-        '/auth/login',
-        { username, password }
-      );
-      await auth?.login();
-      navigate('/');
+      await api.post('/auth/login', { username, password });
+
+      if (!auth) return;
+
+      await auth.login();
+      void navigate('/');
     } catch (err) {
       console.error("Login failed", err);
       
@@ -88,7 +85,10 @@ export default function LoginPage() {
         Witaj! Zaloguj się, aby uzyskać dostęp do rodzinnego archiwum.
       </p>
 
-      <form className={styles.loginForm} onSubmit={handleSubmit}>
+      <form
+        className={styles.loginForm}
+        onSubmit={(e) => { void handleSubmit(e); }}
+      >
 
         {error && (
           <div className={styles.errorMessage}>
@@ -105,7 +105,7 @@ export default function LoginPage() {
             required
             value={username}
             autoCapitalize="none"
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => { setUsername(e.target.value); }}
           />
         </div>
 
@@ -117,7 +117,7 @@ export default function LoginPage() {
             id="password"
             required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { setPassword(e.target.value); }}
           />
         </div>
 

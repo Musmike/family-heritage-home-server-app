@@ -16,11 +16,11 @@ describe('Header Component', () => {
     };
 
     render(
-      <AuthContext.Provider value={mockAuthContext}>
+      <AuthContext value={mockAuthContext}>
         <SidebarProvider>
           <Header />
         </SidebarProvider>
-      </AuthContext.Provider>
+      </AuthContext>
     );
 
     // WHEN
@@ -41,11 +41,11 @@ describe('Header Component', () => {
     };
 
     render(
-      <AuthContext.Provider value={mockAuthContext}>
+      <AuthContext value={mockAuthContext}>
         <SidebarProvider>
           <Header />
         </SidebarProvider>
-      </AuthContext.Provider>
+      </AuthContext>
     );
 
     // THEN

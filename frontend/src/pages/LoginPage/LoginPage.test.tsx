@@ -1,9 +1,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest'; 
-import { AuthContext } from '../../context/AuthContext';
-import { BrowserRouter } from 'react-router-dom';
+import '@testing-library/jest-dom';
 import LoginPage from './LoginPage';
+import { AuthContext } from '../../context/AuthContext';
 import api from '../../api/axiosInstance';
+import { BrowserRouter } from 'react-router-dom';
+
+import { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 vi.mock('../../assets/logo-light-mode.png', () => ({
   default: 'mock-logo.png',
@@ -16,7 +19,7 @@ describe('LoginPage Component', () => {
   const mockAuthContext = {
     user: null,
     isLoading: false,
-    login: mockLogin,
+    login: () => { mockLogin(); return Promise.resolve(); },
     logout: vi.fn(),
   };
 
@@ -27,9 +30,9 @@ describe('LoginPage Component', () => {
   it('should render the core interactive elements of the login form', () => {
     render(
       <BrowserRouter>
-        <AuthContext.Provider value={mockAuthContext}>
+        <AuthContext value={mockAuthContext}>
           <LoginPage />
-        </AuthContext.Provider>
+        </AuthContext>
       </BrowserRouter>
     );
 
@@ -39,13 +42,14 @@ describe('LoginPage Component', () => {
   });
 
   it('should call api and context login function on successful form submission', async () => {
-    (api.post as vi.Mock).mockResolvedValue({});
+    const mockedApi = vi.mocked(api);
+    (mockedApi.post as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({});
 
     render(
       <BrowserRouter>
-        <AuthContext.Provider value={mockAuthContext}>
+        <AuthContext value={mockAuthContext}>
           <LoginPage />
-        </AuthContext.Provider>
+        </AuthContext>
       </BrowserRouter>
     );
 
@@ -58,19 +62,24 @@ describe('LoginPage Component', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith(
+      expect(mockedApi.post).toHaveBeenCalledWith(
         '/auth/login',
         { username: 'testuser', password: 'password' }
       );
+    });
+    await waitFor(() => {
       expect(mockLogin).toHaveBeenCalled();
     });
   });
 
   it('should display an error message on failed login', async () => { 
     // GIVEN
-    const apiError = {
-      isAxiosError: true,
-      response: {
+    const apiError = new AxiosError(
+      'Request failed with status code 401',
+      'ERR_BAD_REQUEST',
+      {} as InternalAxiosRequestConfig,
+      null,
+      {
         data: {
           errorCode: 'BAD_CREDENTIALS',
           message: 'Invalid username or password.',
@@ -78,17 +87,18 @@ describe('LoginPage Component', () => {
         status: 401,
         statusText: 'Unauthorized',
         headers: {},
-        config: {},
-      },
-    };
+        config: {} as InternalAxiosRequestConfig,
+      }
+    );
 
-    (api.post as vi.Mock).mockRejectedValue(apiError);
+    const mockedApi = vi.mocked(api);
+    (mockedApi.post as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(apiError);
     
     render(
       <BrowserRouter>
-        <AuthContext.Provider value={mockAuthContext}>
+        <AuthContext value={mockAuthContext}>
           <LoginPage />
-        </AuthContext.Provider>
+        </AuthContext>
       </BrowserRouter>
     );
 

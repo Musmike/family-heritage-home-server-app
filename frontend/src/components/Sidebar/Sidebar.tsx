@@ -29,12 +29,17 @@ export default function Sidebar() {
       <div
         className={`${styles.sidebarOverlay} ${isSidebarOpen ? styles.sidebarOverlayVisible : ''}`}
         onClick={toggleSidebar}
+        onKeyDown={toggleSidebar}
+        role="button"
+        tabIndex={0}
+        aria-label="Close sidebar"
       />
 
       <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
         <div className={styles.sidebarHeader}>
           <div className={styles.sidebarHeaderLeft}>
             <button
+              type="button"
               onClick={toggleSidebar}
               aria-label="Toggle sidebar"
               className={styles.sidebarHeaderHamburger}
@@ -49,7 +54,7 @@ export default function Sidebar() {
           <ul>
             {navItems.map((item, index) => {
               if (item === null) {
-                return <hr key={`divider-${index}`} className={styles.sidebarDivider} role="separator" />;
+                return <hr key={`divider-${String(index)}`} className={styles.sidebarDivider} role="separator" />;
               }
               return (
                 <li key={item.name}>

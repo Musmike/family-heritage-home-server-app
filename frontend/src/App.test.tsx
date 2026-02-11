@@ -19,11 +19,11 @@ describe('App Routing and Layout', () => {
     };
     render(
       <MemoryRouter initialEntries={['/']}>
-        <AuthContext.Provider value={mockAuthContext}>
+        <AuthContext value={mockAuthContext}>
           <SidebarProvider>
             <App />
           </SidebarProvider>
-        </AuthContext.Provider>
+        </AuthContext>
       </MemoryRouter>
     );
 
@@ -40,11 +40,11 @@ describe('App Routing and Layout', () => {
 
     render(
       <MemoryRouter initialEntries={['/']}>
-        <AuthContext.Provider value={mockAuthContext}>
+        <AuthContext value={mockAuthContext}>
            <SidebarProvider>
             <App />
           </SidebarProvider>
-        </AuthContext.Provider>
+        </AuthContext>
       </MemoryRouter>
     );
 

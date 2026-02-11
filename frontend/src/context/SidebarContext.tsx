@@ -1,4 +1,4 @@
-import { createContext, useState, type ReactNode, useContext, useEffect } from 'react';
+import { createContext, useState, type ReactNode, use, useEffect, useMemo } from 'react';
 
 interface SidebarContextType {
   isSidebarOpen: boolean;
@@ -9,7 +9,7 @@ interface SidebarContextType {
 export const SidebarContext = createContext<SidebarContextType | null>(null);
 
 export function useSidebar() {
-  const context = useContext(SidebarContext);
+  const context = use(SidebarContext);
   if (!context) {
     throw new Error('useSidebar must be used within a SidebarProvider');
   }
@@ -55,22 +55,22 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     }
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); };
   }, [screenSize]);
 
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);
   };
 
-  const value = { 
+  const value = useMemo(() => ({ 
     isSidebarOpen, 
     toggleSidebar,
     screenSize
-  };
+  }), [isSidebarOpen, screenSize]);
 
   return (
-    <SidebarContext.Provider value={value}>
+    <SidebarContext value={value}>
       {children}
-    </SidebarContext.Provider>
+    </SidebarContext>
   );
 }

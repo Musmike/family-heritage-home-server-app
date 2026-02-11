@@ -1,4 +1,4 @@
-import { createContext, useState, type ReactNode, useContext, useEffect } from 'react';
+import { createContext, useState, type ReactNode, use, useEffect, useMemo } from 'react';
 import api from '../api/axiosInstance';
 
 interface AuthUser {
@@ -13,7 +13,13 @@ interface AuthContextType {
   logout: () => void;
 }
 export const AuthContext = createContext<AuthContextType | null>(null);
-export const useAuth = () => useContext(AuthContext)!;
+export const useAuth = () => {
+    const context = use(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -23,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.get<AuthUser>('/users/me');
       setUser(response.data);
-    } catch (error) {
+    } catch {
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -31,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    fetchUser();
+    void fetchUser();
 
     const handleAuthError = () => {
       setUser(null);
@@ -58,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, isLoading, login, logout };
+  const value = useMemo(() => ({ user, isLoading, login, logout }), [user, isLoading]);
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext value={value}>{children}</AuthContext>;
 }

@@ -7,6 +7,8 @@
     "src/**/*.spec.tsx"
   ],
   "compilerOptions": {
-    "types": ["vitest/globals"]
-  }
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
+    "strict": true
+  },
 }
