@@ -21,11 +21,11 @@ describe('MainLayout Component', () => {
 
     render(
       <MemoryRouter initialEntries={['/']}>
-        <AuthContext.Provider value={mockAuthContext}>
+        <AuthContext value={mockAuthContext}>
           <SidebarProvider>
             <MainLayout />
           </SidebarProvider>
-        </AuthContext.Provider>
+        </AuthContext>
       </MemoryRouter>
     );
 

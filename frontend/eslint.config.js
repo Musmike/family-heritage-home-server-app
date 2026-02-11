@@ -4,24 +4,31 @@ import reactX from 'eslint-plugin-react-x'
 import reactDom from 'eslint-plugin-react-dom'
 import { globalIgnores } from 'eslint/config'
 
-export default tseslint.config([
+export default [
   globalIgnores(['dist']),
+
+  // TypeScript configs
+  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
+
+  // React configs
+  reactX.configs['recommended-typescript'],
+  reactDom.configs.recommended,
+
   {
     files: ['**/*.{ts,tsx}'],
-    extends: [
-      ...tseslint.configs.recommendedTypeChecked,
-      ...tseslint.configs.strictTypeChecked,
-      ...tseslint.configs.stylisticTypeChecked,
-      reactX.configs['recommended-typescript'],
-      reactDom.configs.recommended
-    ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        project: [
+          './tsconfig.app.json',
+          './tsconfig.node.json',
+          './tsconfig.test.json'
+        ],
         tsconfigRootDir: import.meta.dirname
       },
       ecmaVersion: 2020,
       globals: globals.browser,
-    }
+    },
   },
-])
+]

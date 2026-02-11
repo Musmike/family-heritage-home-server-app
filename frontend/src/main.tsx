@@ -7,14 +7,18 @@ import { SidebarProvider } from './context/SidebarContext.tsx';
 import './styles/tailwind.css';
 import './styles/globals.css'; 
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <SidebarProvider>
-          <App />
-        </SidebarProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>
-);
+const container = document.getElementById('root');
+
+if (container) {
+  createRoot(container).render(
+    <StrictMode>
+      <BrowserRouter>
+        <AuthProvider>
+          <SidebarProvider>
+            <App />
+          </SidebarProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </StrictMode>
+  );
+}

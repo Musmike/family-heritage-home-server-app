@@ -1,14 +1,19 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 const getCookie = (name: string): string | null => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  if (parts.length === 2) return parts.pop()?.split(';').shift() ?? null;
   return null;
 };
 
+let url = 'http://localhost:8080/api';
+if (import.meta.env.VITE_API_BASE_URL) {
+  url = import.meta.env.VITE_API_BASE_URL as string;
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api',
+  baseURL: url,
   withCredentials: true,
 });
 
@@ -24,9 +29,9 @@ api.interceptors.request.use(config => {
 });
 
 let isRefreshing = false;
-let failedQueue: { resolve: (value: unknown) => void; reject: (reason?: any) => void; }[] = [];
+let failedQueue: { resolve: (value: unknown) => void; reject: (reason?: unknown) => void; }[] = [];
 
-const processQueue = (error: any, token = null) => {
+const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue.forEach(prom => {
     if (error) {
       prom.reject(error);
@@ -37,43 +42,56 @@ const processQueue = (error: any, token = null) => {
   failedQueue = [];
 };
 
+interface RetryableAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
+
 api.interceptors.response.use(
   response => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      const originalRequest = error.config as RetryableAxiosRequestConfig | undefined;
 
-    if (originalRequest.url === '/auth/login') {
-      return Promise.reject(error);
-    }
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
-          failedQueue.push({ resolve, reject });
-        })
-          .then(() => api(originalRequest))
-          .catch(err => Promise.reject(err));
+      if (!originalRequest) {
+        return Promise.reject(error);
       }
 
-      originalRequest._retry = true;
-      isRefreshing = true;
+      if (originalRequest.url === '/auth/login') {
+        return Promise.reject(error);
+      }
 
-      try {
-        await api.post('/auth/refresh');
-        processQueue(null);
-        return api(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError);
-        // On refresh failure, we should trigger a logout
-        // This can be done by dispatching a custom event or calling a logout function from a service
-        window.dispatchEvent(new Event('auth-error'));
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        if (isRefreshing) {
+          return new Promise(function (resolve, reject) {
+            failedQueue.push({ resolve, reject });
+          })
+            .then(async () => await api(originalRequest))
+            .catch((err: unknown) => Promise.reject(err instanceof Error ? err : new Error(String(err))));
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          await api.post('/auth/refresh');
+          processQueue(null);
+          return await api(originalRequest);
+        } catch (refreshError: unknown) {
+          processQueue(
+            refreshError instanceof Error ? refreshError : new Error(String(refreshError))
+          );
+          window.dispatchEvent(new Event('auth-error'));
+          return await Promise.reject(
+            refreshError instanceof Error ? refreshError : new Error(String(refreshError))
+          );
+        } finally {
+          isRefreshing = false;
+        }
+
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
   }
 );
 
