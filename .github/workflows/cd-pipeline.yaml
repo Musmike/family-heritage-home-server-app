@@ -23,7 +23,7 @@ jobs:
       packages: write
       security-events: write
     outputs:
-      image_tag: ${{ steps.meta.outputs.version }}
+      image_tag: ${{ steps.meta_backend.outputs.version }} 
 
     steps:
       - uses: actions/checkout@v4
