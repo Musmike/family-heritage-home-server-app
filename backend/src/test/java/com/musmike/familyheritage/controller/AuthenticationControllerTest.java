@@ -1,6 +1,7 @@
 package com.musmike.familyheritage.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.musmike.familyheritage.AbstractIntegrationTest;
 import com.musmike.familyheritage.dto.LoginRequest;
 import com.musmike.familyheritage.service.JwtService;
 import org.junit.jupiter.api.Test;
@@ -23,9 +24,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
 @AutoConfigureMockMvc
-class AuthenticationControllerTest {
+class AuthenticationControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
