@@ -84,6 +84,7 @@ jobs:
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Update GitOps Repo
         uses: ./.github/actions/update-gitops
         with:
@@ -100,6 +101,7 @@ jobs:
     if: startsWith(github.ref, 'refs/heads/release/')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Update GitOps Repo
         uses: ./.github/actions/update-gitops
         with:
@@ -118,6 +120,7 @@ jobs:
     environment: 
       name: production
     steps:
+      - uses: actions/checkout@v4
       - name: Update GitOps Repo
         uses: ./.github/actions/update-gitops
         with:
