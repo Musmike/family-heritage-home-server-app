@@ -22,13 +22,14 @@ jobs:
             src:
               - 'backend/**'
 
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         if: steps.changes.outputs.src == 'true'
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: 'gradle'
+          cache-dependency-path: backend/gradle.lockfile
 
       - name: Build & Test Backend
         if: steps.changes.outputs.src == 'true'

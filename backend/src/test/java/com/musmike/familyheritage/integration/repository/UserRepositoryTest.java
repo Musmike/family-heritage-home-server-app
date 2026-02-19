@@ -1,8 +1,9 @@
-package com.musmike.familyheritage.repository;
+package com.musmike.familyheritage.integration.repository;
 
-import com.musmike.familyheritage.AbstractIntegrationTest; // Import klasy bazowej
+import com.musmike.familyheritage.integration.AbstractIntegrationTest;
 import com.musmike.familyheritage.model.Role;
 import com.musmike.familyheritage.model.User;
+import com.musmike.familyheritage.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Optional;

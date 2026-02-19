@@ -34,8 +34,7 @@ As an Administrator, I want the system to distinguish between roles (Guest, Priv
 
 **Tasks:**
 - [X] Implement role-based access control on the backend.
-- [ ] Adjust UI visibility based on user role.
-- [ ] Add users with predefined roles to the production database during deployment.
+- [ ] Add users with predefined roles to the database during deployment.
 
 ---
 

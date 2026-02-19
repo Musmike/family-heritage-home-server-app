@@ -1,5 +1,6 @@
-package com.musmike.familyheritage.service;
+package com.musmike.familyheritage.unit.service;
 
+import com.musmike.familyheritage.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;

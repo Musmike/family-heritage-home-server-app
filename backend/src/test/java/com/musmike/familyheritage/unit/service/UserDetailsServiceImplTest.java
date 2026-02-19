@@ -1,8 +1,9 @@
-package com.musmike.familyheritage.service;
+package com.musmike.familyheritage.unit.service;
 
 import com.musmike.familyheritage.model.Role;
 import com.musmike.familyheritage.model.User;
 import com.musmike.familyheritage.repository.UserRepository;
+import com.musmike.familyheritage.service.UserDetailsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
