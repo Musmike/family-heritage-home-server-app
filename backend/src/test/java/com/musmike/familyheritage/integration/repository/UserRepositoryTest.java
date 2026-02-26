@@ -1,7 +1,7 @@
 package com.musmike.familyheritage.integration.repository;
 
 import com.musmike.familyheritage.integration.AbstractIntegrationTest;
-import com.musmike.familyheritage.model.Role;
+import com.musmike.familyheritage.model.enums.UserRole;
 import com.musmike.familyheritage.model.User;
 import com.musmike.familyheritage.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
         User user = new User();
         user.setUsername("testuser");
         user.setPassword("password");
-        user.setRole(Role.GUEST);
+        user.setRole(UserRole.GUEST);
         userRepository.save(user);
 
         // WHEN

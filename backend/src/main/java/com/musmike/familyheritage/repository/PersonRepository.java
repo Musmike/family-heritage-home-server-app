@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface PersonRepository extends JpaRepository<Person, Long> {
     Optional<Person> findByGedcomDataGedRefId(String gedRefId);
+    Optional<Person> findByGedcomDataGedUid(String gedUid);
 }
-

@@ -3,6 +3,7 @@ package com.musmike.familyheritage.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "person_gedcom_data")
@@ -17,8 +18,11 @@ public class PersonGedcomData {
     @JoinColumn(name = "person_id")
     private Person person;
 
-    @Column(name = "ged_ref_id", nullable = false, length = 100)
-    private String gedRefId;
+    @Column(length = 100)
+    private String gedUid;   // MyHeritage _UID
+
+    @Column(nullable = false, length = 100)
+    private String gedRefId; // @I1@
 
     private String rawGivenName;
     private String rawSurname;
@@ -26,6 +30,14 @@ public class PersonGedcomData {
     @Column(length = 1)
     private String rawSex;
 
-    @Column(name = "raw_death_indicated")
-    private boolean rawDeathIndicated = false;
+    private Boolean rawDeathIndicated = false;
+
+    private String rawBirthDate;
+    private String rawBirthPlace;
+    private String rawDeathDate;
+    private String rawDeathPlace;
+    private String rawCauseOfDeath;
+    private String rawBurialPlace;
+
+    private LocalDateTime lastImportedAt;
 }

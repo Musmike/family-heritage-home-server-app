@@ -1,6 +1,6 @@
 package com.musmike.familyheritage.unit.service;
 
-import com.musmike.familyheritage.model.Role;
+import com.musmike.familyheritage.model.enums.UserRole;
 import com.musmike.familyheritage.model.User;
 import com.musmike.familyheritage.repository.UserRepository;
 import com.musmike.familyheritage.service.UserDetailsServiceImpl;
@@ -35,7 +35,7 @@ public class UserDetailsServiceImplTest {
         User user = new User();
         user.setUsername("admin");
         user.setPassword("hashedPassword");
-        user.setRole(Role.ADMIN);
+        user.setRole(UserRole.ADMIN);
 
         when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
 

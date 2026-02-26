@@ -1,4 +1,4 @@
-package com.musmike.familyheritage.model;
+package com.musmike.familyheritage.model.enums;
 
 public enum LifeState {
     LIVING,
