@@ -31,8 +31,8 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
     @Autowired private LocationRepository locationRepository;
     @Autowired private AttributeDictionaryValueRepository attrDictValueRepository;
     @Autowired private GraveRepository graveRepository;
+    @Autowired private EventParticipantRepository eventParticipantRepository;
 
-    // Importing the people
     @Test
     @Transactional
     void shouldImportFullPersonLifecycle_VerifyAllFields() throws Exception {
@@ -115,10 +115,10 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
                 .hasMonth(Month.of(1))
                 .hasDayOfMonth(10);
         assertThat(birth.getCachedEndSortDateTime()).isNull();
+        assertThat(birth.getStartDate()).isNotNull();
         assertThat(birth.getStartDate().getStartYear()).isEqualTo(1920);
         assertThat(birth.getStartDate().getStartMonth()).isEqualTo(1);
         assertThat(birth.getStartDate().getStartDay()).isEqualTo(10);
-        assertThat(birth.getStartDate()).isNotNull();
         assertThat(birth.getEndDate()).isNull();
         assertThat(birth.getMainLocation().getName()).isEqualTo("Warszawa, Polska");
 
@@ -201,7 +201,6 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
             .isEqualTo(EventParticipantRole.PRINCIPAL.name());
     }
 
-    // Importing the families
     @Test
     @Transactional
     void shouldImportThreeFamiliesWithChildrenWeddingEventsAndGedcomData() throws Exception {
@@ -458,9 +457,11 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
 
         // Mark is both a husband in F3 and a child in F1 – cross-family verification
         assertThat(fam3.getHusband().getId()).isEqualTo(markRel.getChild().getId());
+
+        assertThat(familyRepository.findAll())
+                .allMatch(f -> f.getStatus().getCode().equals(f.getGedcomData().getRawStatus()));
     }
 
-    // Updating the person data during the second import
     @Test
     @Transactional
     void shouldUpdatePersonFieldsOnSecondImport() throws Exception {
@@ -653,9 +654,18 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         List<EventParticipant> burialParticipants = burialEvent.getParticipants().stream().toList();
         assertThat(burialParticipants.getFirst().getRole().getParticipantRole().getCode())
                 .isEqualTo(EventParticipantRole.PRINCIPAL.name());
+
+        // Old locations no longer referenced should be removed
+        assertThat(locationRepository.findByName("Warszawa, Polska")).isEmpty();
+        assertThat(locationRepository.findByName("Kraków, Polska")).isEmpty();
+        assertThat(locationRepository.findByName("Cmentarz Rakowicki, Kraków")).isEmpty();
+
+        // New locations exist
+        assertThat(locationRepository.findByName("Gdańsk")).isPresent();
+        assertThat(locationRepository.findByName("Sopot")).isPresent();
+        assertThat(locationRepository.findByName("Cmentarz Nowy w Warszawie")).isPresent();
     }
 
-    // Updating the family data during the second import
     @Test
     @Transactional
     void shouldUpdateFamilyFieldsOnSecondImport() throws Exception {
@@ -793,7 +803,6 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
     }
 
 
-    // Removing people who are absent in the second import
     @Test
     @Transactional
     void shouldDeletePersonsAbsentFromSecondImport() throws Exception {
@@ -829,6 +838,8 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         assertThat(personRepository.findAll()).hasSize(3);
         Person jan = personRepository.findByGedcomDataGedUid("person-uid-001").orElseThrow();
         Long janId = jan.getId();
+
+        Thread.sleep(100);
 
         // WHEN - the second import contains only I1 and I2 (Peter was removed)
         String gedcomV2 = """
@@ -871,11 +882,10 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
     }
 
 
-    // Removing families absent in the second import
     @Test
     @Transactional
     void shouldDeleteFamiliesAbsentFromSecondImport() throws Exception {
-        // GIVEN - import of two families
+        // GIVEN - import of two families, both with wedding events
         String gedcomV1 = """
             0 HEAD
             1 SOUR Test
@@ -906,6 +916,8 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
             1 _UID fam-del-002
             1 HUSB @I3@
             1 MARR
+            2 DATE 5 MAY 1970
+            2 PLAC Poznań
             0 TRLR
             """;
 
@@ -915,11 +927,18 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.clear();
 
         assertThat(familyRepository.findAll()).hasSize(2);
-        Family fam1Before = familyRepository.findByGedcomDataGedUid("fam-del-001").orElseThrow();
-        Long fam1Id = fam1Before.getId();
-        Long weddingEventId = fam1Before.getPrimaryWedding().getId();
+        assertThat(eventRepository.findAll()).hasSize(2); // two wedding events
+        assertThat(eventLocationRepository.findAll()).hasSize(2);
 
-        // WHEN - The second import contains only F1 (F2 has disappeared), people remain.
+        Family fam1Before = familyRepository.findByGedcomDataGedUid("fam-del-001").orElseThrow();
+        Family fam2Before = familyRepository.findByGedcomDataGedUid("fam-del-002").orElseThrow();
+        Long fam1Id = fam1Before.getId();
+        Long weddingF1EventId = fam1Before.getPrimaryWedding().getId();
+        Long weddingF2EventId = fam2Before.getPrimaryWedding().getId();
+
+        Thread.sleep(100);
+
+        // WHEN - second import: only F1 remains (F2 has disappeared), all people remain
         String gedcomV2 = """
             0 HEAD
             1 SOUR Test
@@ -954,27 +973,36 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.clear();
 
         // THEN - only 1 family in the database, F2 removed
-        List<Family> remainingFamilies = familyRepository.findAll();
-        assertThat(remainingFamilies).hasSize(1);
+        assertThat(familyRepository.findAll()).hasSize(1);
         assertThat(familyRepository.findByGedcomDataGedUid("fam-del-002")).isEmpty();
 
         // F1 still exists unchanged
         Family fam1After = familyRepository.findByGedcomDataGedUid("fam-del-001").orElseThrow();
         assertThat(fam1After.getId()).isEqualTo(fam1Id);
-        assertThat(fam1After.getPrimaryWedding().getId()).isEqualTo(weddingEventId);
+        assertThat(fam1After.getPrimaryWedding().getId()).isEqualTo(weddingF1EventId);
+
+        // Wedding event of F1 NOT deleted
+        assertThat(eventRepository.findById(weddingF1EventId)).isPresent();
+
+        // Wedding event of deleted F2 IS deleted (cascade)
+        assertThat(eventRepository.findById(weddingF2EventId)).isEmpty();
+
+        // EventLocation and EventParticipants of F2 wedding also cleaned up
+        assertThat(eventLocationRepository.findAll()).hasSize(1);
+        assertThat(eventLocationRepository.findAll().getFirst().getLocation().getName())
+                .isEqualTo("Gdańsk");
+        assertThat(eventParticipantRepository.findAll().stream()
+                .anyMatch(ep -> ep.getEvent().getId().equals(weddingF2EventId))).isFalse();
+
+        // Location "Poznań" no longer used – should be removed
+        assertThat(locationRepository.findByName("Poznań")).isEmpty();
 
         // All 3 people still exist (deleting a family does not delete people)
         assertThat(personRepository.findAll()).hasSize(3);
         assertThat(personRepository.findByGedcomDataGedUid("p-uid-03")).isPresent();
-
-        // Wedding events of deleted F2 should be deleted in cascade
-        // (F2 did not have a wedding with a date – no event – nothing to check)
-        // It is verified that the wedding event F1 has NOT been deleted
-        assertThat(eventRepository.findById(weddingEventId)).isPresent();
     }
 
 
-    // Idempotentność importu
     @Test
     @Transactional
     void shouldProduceIdenticalStateWhenImportedTwice() throws Exception {
@@ -987,6 +1015,7 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
             1 _UID idm-uid-001
             1 NAME Jan /Kowalski/
             1 SEX M
+            1 FAMS @F1@
             1 BIRT
             2 DATE 10 JAN 1920
             2 PLAC Warszawa
@@ -1001,18 +1030,23 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
             1 NAME Anna /Kowalska/
             1 SEX F
             1 FAMS @F1@
+            0 @I3@ INDI
+            1 _UID idm-uid-003
+            1 NAME Piotr /Kowalski/
+            1 SEX M
+            1 FAMC @F1@
             0 @F1@ FAM
             1 _UID idm-fam-001
             1 HUSB @I1@
             1 WIFE @I2@
-            1 CHIL @I1@
+            1 CHIL @I3@
             1 MARR
             2 DATE 5 MAR 1950
             2 PLAC Gdańsk
             0 TRLR
             """;
 
-        // WHEN - dwa identyczne importy
+        // WHEN - two identical imports
         importService.importGedcom(
                 new ByteArrayInputStream(gedcomContent.getBytes(StandardCharsets.UTF_8)));
         entityManager.flush();
@@ -1023,15 +1057,15 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // THEN - liczba rekordów taka sama jak po jednym imporcie
-        assertThat(personRepository.findAll()).hasSize(2);
+        // THEN - the number of records is the same as after a single import
+        assertThat(personRepository.findAll()).hasSize(3);
         assertThat(familyRepository.findAll()).hasSize(1);
         assertThat(eventRepository.findAll()).hasSize(4); // birth, death, burial, wedding
         assertThat(burialRepository.findAll()).hasSize(1);
-        assertThat(eventLocationRepository.findAll()).hasSize(4);
-        assertThat(personNameRepository.findAll()).hasSize(2);
+        assertThat(eventLocationRepository.findAll()).hasSize(4); // birth, death, burial, wedding
+        assertThat(personNameRepository.findAll()).hasSize(3);
 
-        // Dane są poprawne po podwójnym imporcie
+        // Data is correct after double import
         Person jan = personRepository.findByGedcomDataGedUid("idm-uid-001").orElseThrow();
         assertThat(jan.getCachedGivenName()).isEqualTo("Jan");
         assertThat(jan.getBirthEvent()).isNotNull();
@@ -1043,19 +1077,21 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         Family fam = familyRepository.findByGedcomDataGedUid("idm-fam-001").orElseThrow();
         assertThat(fam.getPrimaryWedding()).isNotNull();
         assertThat(fam.getPrimaryWedding().getParticipants()).hasSize(2);
+        assertThat(fam.getChildren()).hasSize(1);
+        assertThat(fam.getChildren().iterator().next().getChild().getCachedGivenName())
+                .isEqualTo("Piotr");
 
-        // Lokalizacje nie są duplikowane
+        // Locations are not duplicated
         assertThat(locationRepository.findAll())
                 .extracting(Location::getName)
                 .containsExactlyInAnyOrder("Warszawa", "Kraków", "Cmentarz Rakowicki, Kraków", "Gdańsk");
     }
 
 
-    // Współdzielenie lokalizacji
     @Test
     @Transactional
     void shouldShareLocationRecordsAcrossMultipleEvents() throws Exception {
-        // GIVEN - dwie osoby urodzone w tym samym miejscu + ślub też tam
+        // GIVEN - two people born in the same place + wedding also there
         String gedcomContent = """
             0 HEAD
             1 SOUR Test
@@ -1093,8 +1129,8 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // THEN - pomimo że "Warszawa" pojawia się w 4 eventach, w tabeli locations
-        // istnieje dokładnie jeden rekord
+        // THEN - even though 'Warszawa' appears in 4 events,
+        // there is exactly one record in the locations table
         List<Location> locations = locationRepository.findAll();
         assertThat(locations)
                 .extracting(Location::getName)
@@ -1102,14 +1138,14 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         assertThat(locations).hasSize(1);
         Long warsawId = locations.getFirst().getId();
 
-        // Wszystkie 4 eventy wskazują na ten sam rekord Location
+        // All 4 events point to the same record Location
         List<EventLocation> eventLocations = eventLocationRepository.findAll();
         assertThat(eventLocations).hasSize(4);
         assertThat(eventLocations)
                 .extracting(el -> el.getLocation().getId())
                 .containsOnly(warsawId);
 
-        // Wszystkie eventy mają mainLocation wskazujące na ten sam rekord
+        // All events have a mainLocation pointing to the same record
         Person jan = personRepository.findByGedcomDataGedUid("loc-uid-001").orElseThrow();
         Person anna = personRepository.findByGedcomDataGedUid("loc-uid-002").orElseThrow();
         Family fam = familyRepository.findByGedcomDataGedUid("loc-fam-001").orElseThrow();
@@ -1121,11 +1157,10 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
     }
 
 
-    // Zmiana typu relacji dziecka przy re-imporcie
     @Test
     @Transactional
     void shouldUpdateChildRelationshipTypeOnSecondImport() throws Exception {
-        // GIVEN - Mark jest biologicznym dzieckiem
+        // GIVEN - Mark is a biological child
         String gedcomV1 = """
             0 HEAD
             1 SOUR Test
@@ -1158,7 +1193,7 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         assertThat(markBefore.getRelationshipType()).isEqualTo(FamilyChildRelationshipType.BIOLOGICAL);
         Long markChildRelId = markBefore.getId();
 
-        // WHEN - Mark staje się adoptowany
+        // WHEN - Mark gets adopted
         String gedcomV2 = """
             0 HEAD
             1 SOUR Test
@@ -1193,24 +1228,23 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
 
         FamilyChild markAfter = famAfter.getChildren().iterator().next();
 
-        // Relacja zaktualizowana na ADOPTED
+        // Report updated to ADOPTED
         assertThat(markAfter.getRelationshipType()).isEqualTo(FamilyChildRelationshipType.ADOPTED);
 
-        // Raw data również zaktualizowane
+        // Raw data also updated
         FamilyChildGedcomData rawChild = famAfter.getGedcomData().getChildren().iterator().next();
         assertThat(rawChild.getRawChildRefId()).isEqualTo("@I2@");
         assertThat(rawChild.getRawRelationshipType()).isEqualToIgnoringCase("Adopted");
 
-        // Nie powstał nowy rekord FamilyChild – ten sam ID
+        // No new FamilyChild record was created – same ID
         assertThat(markAfter.getId()).isEqualTo(markChildRelId);
     }
 
 
-    // Usunięcie eventu birth przy re-imporcie
     @Test
     @Transactional
     void shouldDeleteBirthEventWhenRemovedFromSecondImport() throws Exception {
-        // GIVEN - osoba z narodzinami i śmiercią
+        // GIVEN - a person with a birth and death
         String gedcomV1 = """
             0 HEAD
             1 SOUR Test
@@ -1241,7 +1275,7 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         assertThat(eventRepository.findAll()).hasSize(2);
         assertThat(eventLocationRepository.findAll()).hasSize(2);
 
-        // WHEN - drugi import: brak BIRT, zostaje tylko DEAT
+        // WHEN - second import: no BIRT, only DEAT remains
         String gedcomV2 = """
             0 HEAD
             1 SOUR Test
@@ -1261,30 +1295,39 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // THEN - event urodzin usunięty
+        // THEN - birth event deleted
         assertThat(eventRepository.findById(birthEventId)).isEmpty();
         assertThat(eventRepository.findById(deathEventId)).isPresent();
         assertThat(eventRepository.findAll()).hasSize(1);
 
-        // EventLocation dla birth również usunięty
+        // EventLocation for birth also removed
         assertThat(eventLocationRepository.findAll()).hasSize(1);
         assertThat(eventLocationRepository.findAll().getFirst().getLocation().getName())
                 .isEqualTo("Kraków");
 
-        // Osoba nadal istnieje, ale bez birthEvent
+        // The person still exists, but without a birthEvent
         Person janAfter = personRepository.findByGedcomDataGedUid("evt-uid-001").orElseThrow();
         assertThat(janAfter.getBirthEvent()).isNull();
         assertThat(janAfter.getDeathEvent()).isNotNull();
         assertThat(janAfter.getGedcomData().getRawBirthDate()).isNull();
         assertThat(janAfter.getGedcomData().getRawBirthPlace()).isNull();
+
+        // EventParticipant for the deleted birth event also removed
+        boolean anyParticipantForDeletedBirth = eventParticipantRepository.findAll().stream()
+                .anyMatch(ep -> ep.getEvent().getId().equals(birthEventId));
+        assertThat(anyParticipantForDeletedBirth).isFalse();
+
+        // EventParticipant for the remaining death event still exists
+        boolean participantForDeathExists = eventParticipantRepository.findAll().stream()
+                .anyMatch(ep -> ep.getEvent().getId().equals(deathEventId));
+        assertThat(participantForDeathExists).isTrue();
     }
 
 
-    // Usunięcie eventu wedding przy re-imporcie
     @Test
     @Transactional
     void shouldDeleteWeddingEventWhenRemovedFromSecondImport() throws Exception {
-        // GIVEN - rodzina ze ślubem
+        // GIVEN - family with wedding
         String gedcomV1 = """
             0 HEAD
             1 SOUR Test
@@ -1320,7 +1363,7 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         assertThat(eventRepository.findAll()).hasSize(1);
         assertThat(eventLocationRepository.findAll()).hasSize(1);
 
-        // WHEN - drugi import: tag MARR bez daty i miejsca (brak eventu do zapisania)
+        // WHEN - second import: MARR tag without date and place (no event to save)
         String gedcomV2 = """
             0 HEAD
             1 SOUR Test
@@ -1347,26 +1390,25 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // THEN - event ślubu usunięty
+        // THEN - wedding event deleted
         assertThat(eventRepository.findById(weddingEventId)).isEmpty();
         assertThat(eventRepository.findAll()).isEmpty();
         assertThat(eventLocationRepository.findAll()).isEmpty();
 
-        // Rodzina nadal istnieje, ale bez primaryWedding
+        // The family still exists, but without primaryWedding
         Family famAfter = familyRepository.findByGedcomDataGedUid("wevt-fam-001").orElseThrow();
         assertThat(famAfter.getPrimaryWedding()).isNull();
         assertThat(famAfter.getGedcomData().getRawWeddingDate()).isNull();
         assertThat(famAfter.getGedcomData().getRawWeddingPlace()).isNull();
-        // Status zmieniony na UNKNOWN (brak tagu MARR)
+        // Status changed to UNKNOWN (no MARR tag)
         assertThat(famAfter.getStatus().getCode()).isEqualTo(FamilyStatus.UNKNOWN.name());
     }
 
 
-    // Usunięcie osoby będącej częścią rodziny
     @Test
     @Transactional
     void shouldNullifyFamilySpouseWhenPersonDeletedInSecondImport() throws Exception {
-        // GIVEN - rodzina z mężem i żoną
+        // GIVEN - a family with a husband and wife
         String gedcomV1 = """
             0 HEAD
             1 SOUR Test
@@ -1405,7 +1447,7 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         assertThat(personRepository.findAll()).hasSize(3);
         assertThat(familyRepository.findAll()).hasSize(1);
 
-        // WHEN - drugi import: Lucy i Mark zniknęli, John i rodzina zostają
+        // WHEN - second import: Lucy and Mark have disappeared, John and his family remain
         String gedcomV2 = """
             0 HEAD
             1 SOUR Test
@@ -1429,41 +1471,40 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // THEN - Lucy i Mark usunięci z bazy
+        // THEN - Lucy and Mark removed from the database
         assertThat(personRepository.findAll()).hasSize(1);
         assertThat(personRepository.findByGedcomDataGedUid("del-uid-002")).isEmpty();
         assertThat(personRepository.findByGedcomDataGedUid("del-uid-003")).isEmpty();
 
-        // Rodzina nadal istnieje (John jest w pliku)
+        // The family still exists (John is in the file)
         assertThat(familyRepository.findAll()).hasSize(1);
         Family famAfter = familyRepository.findByGedcomDataGedUid("del-fam-001").orElseThrow();
 
-        // John nadal jest mężem
+        // John is still the husband
         assertThat(famAfter.getHusband()).isNotNull();
         assertThat(famAfter.getHusband().getCachedGivenName()).isEqualTo("John");
 
-        // Lucy (żona) usunięta – pole wife jest null
+        // Lucy (wife) removed – the wife field is null
         assertThat(famAfter.getWife()).isNull();
 
-        // Mark (dziecko) usunięty – lista children pusta
+        // Mark (child) removed – children list empty
         assertThat(famAfter.getChildren()).isEmpty();
 
-        // Ślub nadal istnieje (John nadal w rodzinie)
+        // The marriage still exists (John is still in the family)
         assertThat(famAfter.getPrimaryWedding()).isNotNull();
         assertThat(famAfter.getPrimaryWedding().getMainLocation().getName()).isEqualTo("Warszawa");
 
-        // Uczestnicy ślubu: Lucy usunięta z event_participants
+        // Wedding participants: Lucy removed from event_participants
         assertThat(famAfter.getPrimaryWedding().getParticipants()).hasSize(1);
         assertThat(famAfter.getPrimaryWedding().getParticipants().iterator().next()
                 .getPerson().getCachedGivenName()).isEqualTo("John");
     }
 
 
-    // Import osoby bez eventów
     @Test
     @Transactional
     void shouldImportPersonWithNoEventsWithoutErrors() throws Exception {
-        // GIVEN - osoba tylko z imieniem i płcią, bez żadnych eventów
+        // GIVEN - a person with only a name and gender, without any events
         String gedcomContent = """
             0 HEAD
             1 SOUR Test
@@ -1501,11 +1542,10 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
     }
 
 
-    // Rodzina z referencją do osoby nieistniejącej w pliku
     @Test
     @Transactional
     void shouldGracefullyHandleFamilyWithMissingPersonReference() throws Exception {
-        // GIVEN - F1 odwołuje się do @I99@ którego nie ma w pliku
+        // GIVEN - F1 refers to @I99@, which is not in the file
         String gedcomContent = """
             0 HEAD
             1 SOUR Test
@@ -1526,13 +1566,13 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
             0 TRLR
             """;
 
-        // WHEN - import nie powinien rzucić wyjątku
+        // WHEN - import should not throw an exception
         importService.importGedcom(
                 new ByteArrayInputStream(gedcomContent.getBytes(StandardCharsets.UTF_8)));
         entityManager.flush();
         entityManager.clear();
 
-        // THEN - import zakończony sukcesem, John i rodzina zostały zapisane
+        // THEN - import successful, John and family saved
         assertThat(personRepository.findAll()).hasSize(1);
         assertThat(familyRepository.findAll()).hasSize(1);
 
@@ -1540,23 +1580,22 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         assertThat(fam.getHusband()).isNotNull();
         assertThat(fam.getHusband().getCachedGivenName()).isEqualTo("John");
 
-        // Nieistniejące referencje są ignorowane – wife i children puste
+        // Non-existent references are ignored – wife and children are empty
         assertThat(fam.getWife()).isNull();
         assertThat(fam.getChildren()).isEmpty();
 
-        // Raw data zawiera oryginalne referencje z pliku
+        // Raw data contains original references from the file
         assertThat(fam.getGedcomData().getRawWifeRefId()).isEqualTo("@I99@");
         assertThat(fam.getGedcomData().getChildren()).isEmpty();
 
-        // Ślub zapisany mimo brakujących osób
+        // Wedding recorded despite missing persons
         assertThat(fam.getPrimaryWedding()).isNotNull();
         assertThat(fam.getPrimaryWedding().getMainLocation().getName()).isEqualTo("Warszawa");
-        // Uczestnik ślubu: tylko John (I99 nie istnieje)
+        // Wedding participant: only John (I99 does not exist)
         assertThat(fam.getPrimaryWedding().getParticipants()).hasSize(1);
     }
 
 
-    // Sierota EventLocation – event traci miejsce przy re-imporcie
     @Test
     @Transactional
     void shouldDeleteEventLocationWhenPlaceRemovedOnSecondImport() throws Exception {
@@ -1588,10 +1627,7 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
                 .extracting(Location::getName)
                 .containsExactlyInAnyOrder("Warszawa", "Kraków");
 
-        Person janBefore = personRepository.findByGedcomDataGedUid("evtloc-uid-001").orElseThrow();
-        Long birthEventId = janBefore.getBirthEvent().getId();
-
-        // WHEN - drugi import: BIRT bez miejsca, DEAT bez miejsca
+        // WHEN - second import: BIRT without location, DEAT without location
         String gedcomV2 = """
             0 HEAD
             1 SOUR Test
@@ -1612,10 +1648,10 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // THEN – oba rekordy EventLocation usunięte
+        // THEN – both EventLocation records deleted
         assertThat(eventLocationRepository.findAll()).isEmpty();
 
-        // Eventy nadal istnieją, tylko bez miejsca
+        // Events still exist, just without a location
         Person janAfter = personRepository.findByGedcomDataGedUid("evtloc-uid-001").orElseThrow();
         assertThat(janAfter.getBirthEvent()).isNotNull();
         assertThat(janAfter.getBirthEvent().getMainLocation()).isNull();
@@ -1624,7 +1660,6 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
     }
 
 
-    // Sierota Grave – zmiana miejsca pochówku przy re-imporcie
     @Test
     @Transactional
     void shouldDeleteOrphanGraveWhenBurialPlaceChangedOnSecondImport() throws Exception {
@@ -1653,7 +1688,7 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         assertThat(burialsAfterV1.getFirst().getGrave().getCemeteryLocation().getName())
                 .isEqualTo("Cmentarz Rakowicki, Kraków");
 
-        // WHEN - nowe miejsce pochówku
+        // WHEN - new burial site
         String gedcomV2 = """
             0 HEAD
             1 SOUR Test
@@ -1672,7 +1707,7 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // THEN – stary Grave usunięty, nowy na nowym miejscu
+        // THEN – old Grave removed, new one in a new location
         assertThat(graveRepository.findAll()).hasSize(1);
         assertThat(graveRepository.findById(oldGraveId)).isEmpty();
 
@@ -1681,16 +1716,15 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         assertThat(burialsAfterV2.getFirst().getGrave().getCemeteryLocation().getName())
                 .isEqualTo("Cmentarz Powązkowski, Warszawa");
 
-        // Stary Burial usunięty (tylko jeden rekord)
+        // Old Burial deleted (only one record)
         assertThat(burialsAfterV2.getFirst().getGrave().getId()).isNotEqualTo(oldGraveId);
     }
 
 
-    // Sierota Location – usunięty gdy nic na nią nie wskazuje
     @Test
     @Transactional
     void shouldDeleteLocationWhenNoLongerReferencedByAnyEvent() throws Exception {
-        // GIVEN – Jan urodzony w Warszawie, Anna urodzona w Krakowie
+        // GIVEN – Jan born in Warsaw, Anna born in Krakow
         String gedcomV1 = """
             0 HEAD
             1 SOUR Test
@@ -1721,7 +1755,7 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
                 .extracting(Location::getName)
                 .containsExactlyInAnyOrder("Warszawa", "Kraków");
 
-        // WHEN - drugi import: Anna zniknęła, Kraków nie jest już nigdzie używany
+        // WHEN - second import: Anna disappeared, Krakow is no longer used anywhere
         String gedcomV2 = """
             0 HEAD
             1 SOUR Test
@@ -1741,23 +1775,22 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // THEN – Kraków usunięty (nic już na niego nie wskazuje), Warszawa zostaje
+        // THEN – Krakow removed (nothing points to it anymore), Warsaw remains
         assertThat(locationRepository.findAll()).hasSize(1);
         assertThat(locationRepository.findAll().getFirst().getName()).isEqualTo("Warszawa");
         assertThat(locationRepository.findByName("Kraków")).isEmpty();
 
-        // EventLocation dla Anny również usunięty
+        // EventLocation for Anna also deleted
         assertThat(eventLocationRepository.findAll()).hasSize(1);
         assertThat(eventLocationRepository.findAll().getFirst().getLocation().getName())
                 .isEqualTo("Warszawa");
     }
 
 
-    // Sierota AttributeDictionaryValue – usunięty gdy nieużywany
     @Test
     @Transactional
     void shouldDeleteOrphanAttributeDictionaryValueWhenNoLongerUsed() throws Exception {
-        // GIVEN – osoba z przyczyną śmierci
+        // GIVEN – person with cause of death
         String gedcomV1 = """
             0 HEAD
             1 SOUR Test
@@ -1791,8 +1824,8 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
                 .containsExactlyInAnyOrder("Zawał serca", "Wypadek");
         assertThat(eventAttrRepository.findAll()).hasSize(2);
 
-        // WHEN - drugi import: Jan bez przyczyny śmierci, "Zawał serca" nie jest
-        // już używane przez żaden event. "Wypadek" nadal używany przez Annę.
+        // WHEN - second import: Jan without cause of death, 'Zawał serca' is no longer
+        // used by any event. 'Wypadek' still used by Anna.
         String gedcomV2 = """
             0 HEAD
             1 SOUR Test
@@ -1820,14 +1853,14 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        // THEN – "Zawał serca" usunięty (nikt go już nie używa)
+        // THEN – "Zawał serca"  removed (no one uses it anymore)
         assertThat(attrDictValueRepository.findAll()).hasSize(1);
         assertThat(attrDictValueRepository.findAll().getFirst().getCode()).isEqualTo("Wypadek");
 
-        // EventAttributeValue dla Jana usunięty
+        // EventAttributeValue for Jan deleted
         assertThat(eventAttrRepository.findAll()).hasSize(1);
 
-        // Weryfikacja po stronie eventów
+        // Verification on the event side
         Person jan = personRepository.findByGedcomDataGedUid("attrval-uid-001").orElseThrow();
         Person anna = personRepository.findByGedcomDataGedUid("attrval-uid-002").orElseThrow();
 
@@ -1842,5 +1875,171 @@ public class GedcomImportServiceTest extends AbstractIntegrationTest {
                 .toList();
         assertThat(annaAttrs).hasSize(1);
         assertThat(annaAttrs.getFirst().getAttributeDictionaryValue().getCode()).isEqualTo("Wypadek");
+    }
+
+
+    @Test
+    @Transactional
+    void shouldCorrectlyMapAllMyHeritageFamilyStatusTypes() throws Exception {
+        // GIVEN
+        String gedcomContent = """
+            0 HEAD
+            1 SOUR MYHERITAGE
+            1 CHAR UTF-8
+            0 @I1@ INDI
+            1 _UID st-p-01
+            1 NAME Adam /Kowalski/
+            1 SEX M
+            1 FAMS @FS1@
+            0 @I2@ INDI
+            1 _UID st-p-02
+            1 NAME Adam /Nowak/
+            1 SEX M
+            1 FAMS @FS2@
+            0 @I3@ INDI
+            1 _UID st-p-03
+            1 NAME Adam /Wiśniewski/
+            1 SEX M
+            1 FAMS @FS3@
+            0 @I4@ INDI
+            1 _UID st-p-04
+            1 NAME Adam /Wójcik/
+            1 SEX M
+            1 FAMS @FS4@
+            0 @I5@ INDI
+            1 _UID st-p-05
+            1 NAME Adam /Kaminski/
+            1 SEX M
+            1 FAMS @FS5@
+            0 @I6@ INDI
+            1 _UID st-p-06
+            1 NAME Adam /Lewandowski/
+            1 SEX M
+            1 FAMS @FS6@
+            0 @I7@ INDI
+            1 _UID st-p-07
+            1 NAME Adam /Zielinski/
+            1 SEX M
+            1 FAMS @FS7@
+            0 @I8@ INDI
+            1 _UID st-p-08
+            1 NAME Adam /Szymanski/
+            1 SEX M
+            1 FAMS @FS8@
+            0 @I9@ INDI
+            1 _UID st-p-09
+            1 NAME Adam /Woźniak/
+            1 SEX M
+            1 FAMS @FS9@
+            0 @I10@ INDI
+            1 _UID st-p-10
+            1 NAME Adam /Dąbrowski/
+            1 SEX M
+            1 FAMS @FS10@
+            0 @FS1@ FAM
+            1 _UID st-fam-married
+            1 HUSB @I1@
+            1 MARR
+            2 DATE 1 JAN 1950
+            2 PLAC Warszawa
+            0 @FS2@ FAM
+            1 _UID st-fam-divorced
+            1 HUSB @I2@
+            1 MARR
+            2 DATE 1 JAN 1950
+            2 PLAC Warszawa
+            1 DIV
+            0 @FS3@ FAM
+            1 _UID st-fam-separated
+            1 HUSB @I3@
+            1 MARR
+            2 DATE 1 JAN 1950
+            2 PLAC Warszawa
+            1 EVEN
+            2 TYPE Separation
+            0 @FS4@ FAM
+            1 _UID st-fam-widowed
+            1 HUSB @I4@
+            1 MARR
+            2 DATE 1 JAN 1950
+            2 PLAC Warszawa
+            1 EVEN
+            2 TYPE Death of Spouse
+            0 @FS5@ FAM
+            1 _UID st-fam-engaged
+            1 HUSB @I5@
+            1 ENGA
+            0 @FS6@ FAM
+            1 _UID st-fam-partners
+            1 HUSB @I6@
+            1 EVEN
+            2 TYPE MYHERITAGE:REL_PARTNERS
+            0 @FS7@ FAM
+            1 _UID st-fam-friends
+            1 HUSB @I7@
+            1 EVEN
+            2 TYPE MYHERITAGE:REL_FRIENDS
+            0 @FS8@ FAM
+            1 _UID st-fam-annulled
+            1 HUSB @I8@
+            1 MARR
+            2 DATE 1 JAN 1950
+            2 PLAC Warszawa
+            1 ANUL
+            0 @FS9@ FAM
+            1 _UID st-fam-unknown
+            1 HUSB @I9@
+            1 EVEN
+            2 TYPE MYHERITAGE:REL_UNKNOWN
+            0 @FS10@ FAM
+            1 _UID st-fam-other
+            1 HUSB @I10@
+            1 EVEN
+            2 TYPE MYHERITAGE:REL_OTHER
+            0 TRLR
+            """;
+
+        // WHEN
+        importService.importGedcom(
+                new ByteArrayInputStream(gedcomContent.getBytes(StandardCharsets.UTF_8)));
+        entityManager.flush();
+        entityManager.clear();
+
+        // THEN
+        assertThat(familyRepository.findAll()).hasSize(10);
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-married").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.MARRIED.name());
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-divorced").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.DIVORCED.name());
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-separated").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.SEPARATED.name());
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-widowed").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.WIDOWED.name());
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-engaged").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.ENGAGED.name());
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-partners").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.PARTNERS.name());
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-friends").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.FRIENDS.name());
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-annulled").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.ANNULLED.name());
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-unknown").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.UNKNOWN.name());
+
+        assertThat(familyRepository.findByGedcomDataGedUid("st-fam-other").orElseThrow()
+                .getStatus().getCode()).isEqualTo(FamilyStatus.OTHER.name());
+
+        // Weryfikacja rawStatus – musi być spójny z faktycznym statusem
+        assertThat(familyRepository.findAll())
+                .allMatch(f -> f.getStatus().getCode().equals(f.getGedcomData().getRawStatus()));
     }
 }
